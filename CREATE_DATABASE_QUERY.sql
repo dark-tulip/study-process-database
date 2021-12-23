@@ -42,6 +42,20 @@ CREATE TABLE StudySchema.SUBJECTS (
 );
 
 
+---- Создаем таблицу СТРАНЫ ----
+create table [StudySchema].[COUNTRY] (
+	country_ID bigint IDENTITY (1,1) NOT NULL PRIMARY KEY,
+	country_NAME nvarchar(50),
+);
+---- Создаем таблицу ГОРОДА ----
+create table [StudySchema].[CITY] (
+	city_ID bigint IDENTITY (1,1) NOT NULL PRIMARY KEY,
+	city_NAME nvarchar(50),
+	country_ID bigint,
+
+	CONSTRAINT FK_COUNTRY FOREIGN KEY (country_ID) REFERENCES [StudySchema].[COUNTRY] (country_ID),
+)
+
 /* Таблица СТУДЕНТ */
 CREATE TABLE StudySchema.STUDENT (
 
@@ -56,11 +70,13 @@ CREATE TABLE StudySchema.STUDENT (
 
 	group_ID bigint NOT NULL FOREIGN KEY REFERENCES StudySchema.GROUPS(group_ID) ON DELETE CASCADE,
 	speciality_ID bigint NOT NULL FOREIGN KEY REFERENCES StudySchema.SPECIALITY(speciality_ID) ON DELETE CASCADE,
-	
+	city_ID bigint,
 	stipendia_value bigint NULL DEFAULT 20000,
 
-	CONSTRAINT FK_Student_Student FOREIGN KEY (student_STAR) REFERENCES StudySchema.STUDENT (student_ID)
+	CONSTRAINT FK_Student_Student FOREIGN KEY (student_STAR) REFERENCES StudySchema.STUDENT (student_ID),
+	CONSTRAINT FK_student_city_id FOREIGN KEY (city_ID) REFERENCES StudySchema.CITY(city_ID)
 );
+
 
 /* Таблица НОМЕРА ТЕЛЕфОНОВ СТУДЕНТОВ */
 CREATE TABLE StudySchema.STUDENT_PHONES ( 
@@ -713,19 +729,6 @@ select * from StudySchema.STUDENT where stipendia_value > 20000;
 
 ---- ЗАДАНИЕ 5 - Список студентов проживающих в Астане и Караганде
 
----- Создаем таблицу СТРАНЫ ----
-create table [StudySchema].[COUNTRY] (
-	country_ID bigint IDENTITY (1,1) NOT NULL PRIMARY KEY,
-	country_NAME nvarchar(50),
-);
----- Создаем таблицу ГОРОДА ----
-create table [StudySchema].[CITY] (
-	city_ID bigint IDENTITY (1,1) NOT NULL PRIMARY KEY,
-	city_NAME nvarchar(50),
-	country_ID bigint,
-
-	CONSTRAINT FK_COUNTRY FOREIGN KEY (country_ID) REFERENCES [StudySchema].[COUNTRY] (country_ID),
-)
 
 ---- Заполняем таблицу страны ----
 INSERT INTO [StudySchema].[COUNTRY] (country_NAME) VALUES 
@@ -748,8 +751,7 @@ INSERT INTO [StudySchema].[CITY] (city_NAME, country_ID) VALUES
 (N'Жанаозен', 1),
 (N'Актобе', 1);
 
----- Добавляем к таблице студента ГОРОД прожиания ----
-ALTER TABLE [StudySchema].[STUDENT] ADD city_ID bigint FOREIGN KEY REFERENCES StudySchema.CITY;
+
 
 update StudySchema.STUDENT set city_ID=4 where student_ID=1;
 update StudySchema.STUDENT set city_ID=3 where student_ID=2;
@@ -1054,9 +1056,11 @@ select student_SURNAME from StudySchema.STUDENT
 union all
 select teacher_SURNAME from DekanatSchema.TEACHER
 	where teacher_SURNAME between N'К' and N'С'
+GO
 
 -- Добавим колону с зарплатой
-alter table DekanatSchema.TEACHER add salary bigint default 100000;
+alter table DekanatSchema.TEACHER add salary bigint;
+GO
 update DekanatSchema.TEACHER set salary=100000;
 
 select student_ID as 'user ID' ,student_SURNAME as 'SURNAME', stipendia_value as 'Payment', 'student' from StudySchema.STUDENT
@@ -1208,7 +1212,6 @@ from StudySchema.STUDENT as S1
 		 from StudySchema.STUDENT as S, StudySchema.GROUPS as G
 		 where S.group_ID=G.group_ID group by G.group_ID) as B
 on B.group_ID = S1.group_ID and (S1.stipendia_value - qwe > 0) -- стипендия больше чем сред стипендия в группе
-
 
 -- 11 Список студентов и среднюю оценку его обучения
 select p.student_ID, 
@@ -1565,7 +1568,7 @@ create procedure new_Teacher
 	@teacher_POSITION nvarchar(20), 
 	@teacher_STEPEN   nvarchar(20), 
 	@chair_ID bigint,
-	@salary int
+	@salary bigint
 	
 ) as 
 begin
