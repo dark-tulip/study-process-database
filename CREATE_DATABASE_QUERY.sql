@@ -749,7 +749,7 @@ INSERT INTO [StudySchema].[CITY] (city_NAME, country_ID) VALUES
 (N'Актобе', 1);
 
 ---- Добавляем к таблице студента ГОРОД прожиания ----
-ALTER TABLE [StudySchema].[STUDENT] ADD city_ID bigint default 1;
+ALTER TABLE [StudySchema].[STUDENT] ADD city_ID bigint FOREIGN KEY REFERENCES StudySchema.CITY;
 
 update StudySchema.STUDENT set city_ID=4 where student_ID=1;
 update StudySchema.STUDENT set city_ID=3 where student_ID=2;
@@ -1208,11 +1208,6 @@ from StudySchema.STUDENT as S1
 		 from StudySchema.STUDENT as S, StudySchema.GROUPS as G
 		 where S.group_ID=G.group_ID group by G.group_ID) as B
 on B.group_ID = S1.group_ID and (S1.stipendia_value - qwe > 0) -- стипендия больше чем сред стипендия в группе
-
-
- 
-
--- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ргр до 12 ноября !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 -- 11 Список студентов и среднюю оценку его обучения
