@@ -12,3 +12,10 @@
 Also included BookShopDB .sql script
 
 
+```psql
+-- change varchar constraint to int 
+ALTER TABLE client DROP CONSTRAINT client_pkey CASCADE;
+ALTER TABLE client ALTER COLUMN id TYPE integer USING (id::integer);
+ALTER TABLE client ADD CONSTRAINT client_pkey PRIMARY KEY (id);
+ALTER TABLE client RENAME id TO clientId;
+```
